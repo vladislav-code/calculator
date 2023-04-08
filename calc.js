@@ -3,9 +3,9 @@ let first_number = '';
 let second_number = '';
 let sign = '';
 let finish = false;
-let operate = false;
 let result = '';
 let memory = '';
+let lastOperation = '';
 let func = false;
 // TODO стили кнопок: наследование sup
 // кнопки
@@ -75,7 +75,6 @@ function clearAll() {
     result = '';
     sign = '';
     finish = false;
-    operate = false;
     out.textContent = 0;
 }
 
@@ -91,17 +90,6 @@ document.querySelector('.buttons').onclick = (event) => {
     // нажатая кнопка
     const key = event.target.textContent;
 
-    // if (finish && key == '=') {
-    //     first_number = result;
-    //     finish = false;
-    // }
-    // else if (finish) {
-    //     first_number = ''; // переместить очистку
-    //     second_number = '';
-    //     sign = '';
-    //     finish = false;
-    // }
-    
     if (digit.includes(key)) {
         if(sign == '' && second_number == '') {
             result = ''; /////
@@ -123,36 +111,53 @@ document.querySelector('.buttons').onclick = (event) => {
 
     if (action.includes(key)) {
         console.log('нажат знак');
-        if (sign != '' && !finish) {operate = true; console.log('повторно знак');}
+        if (first_number != '' && second_number != '') {
+            switch (sign) {
+                case '+': 
+                    result = (+first_number) + (+second_number);
+                    break;
+                case '-':
+                    result = first_number - second_number;
+                    break;
+                case '*':
+                    result = first_number * second_number;
+                    break;
+                case '/':
+                    result = first_number / second_number;
+                    break;
+            }
+            out.textContent = result;
+            finish = true;  
+        }
         sign = key;
-        console.log(first_number, sign, second_number);
+        console.log(first_number, sign, second_number, result);
         out.textContent = sign;
-        if (!operate) return;
+        return;
     }
 
-    // двойное нажатие операции при более  чем одно действие
-    if (key == '=' || operate) {
+    if (key == '=') {
         console.log(first_number, sign, second_number, result);
         if (result != '') first_number = result;
         switch (sign) {
             case '+': 
-                result = (+first_number) + (+second_number);
+                result = parseFloat(first_number) + parseFloat(second_number);
                 break;
             case '-':
-                result = first_number - second_number;
+                result = parseFloat(first_number) - parseFloat(second_number);
                 break;
             case '*':
-                result = first_number * second_number;
+                result = parseFloat(first_number) * parseFloat(second_number);
                 break;
             case '/':
                 if (second_number == 0) {
                     result = NaN;
                     break
                 }
-                result = first_number / second_number;
+                result = parseFloat(first_number) / parseFloat(second_number);
                 break;
         }
         out.textContent = result;
+        lastOperation = sign; // сохраняем последнюю операцию
         finish = true;
         console.log(first_number, sign, second_number, result);
         operate = false;
