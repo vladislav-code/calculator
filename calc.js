@@ -3,9 +3,9 @@ let first_number = '';
 let second_number = '';
 let sign = '';
 let finish = false;
-let operate = false;
 let result = '';
 let memory = '';
+let lastOperation = '';
 
 const digit = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'];
 const action = ['-', '+', '*', '/'];
@@ -16,10 +16,9 @@ const out = document.querySelector('.calc-screen p');
 function clearAll() {
     first_number = '';
     second_number = '';
-    let result = '';
+    result = '';
     sign = '';
     finish = false;
-    operate = false;
     out.textContent = 0;
 }
 
@@ -35,17 +34,6 @@ document.querySelector('.buttons').onclick = (event) => {
     // нажатая кнопка
     const key = event.target.textContent;
 
-    // if (finish && key == '=') {
-    //     first_number = result;
-    //     finish = false;
-    // }
-    // else if (finish) {
-    //     first_number = ''; // переместить очистку
-    //     second_number = '';
-    //     sign = '';
-    //     finish = false;
-    // }
-    
     if (digit.includes(key)) {
         if(sign == '' && second_number == '') {
             first_number += key;
@@ -66,33 +54,51 @@ document.querySelector('.buttons').onclick = (event) => {
 
     if (action.includes(key)) {
         console.log('нажат знак');
-        if (sign != '') {operate = true; console.log('повторно знак');}
+        if (first_number != '' && second_number != '') {
+            switch (sign) {
+                case '+': 
+                    result = (+first_number) + (+second_number);
+                    break;
+                case '-':
+                    result = first_number - second_number;
+                    break;
+                case '*':
+                    result = first_number * second_number;
+                    break;
+                case '/':
+                    result = first_number / second_number;
+                    break;
+            }
+            out.textContent = result;
+            finish = true;  
+        }
         sign = key;
-        console.log(first_number, sign, second_number);
+        console.log(first_number, sign, second_number, result);
         out.textContent = sign;
-        if (!operate) return;
+        return;
     }
 
-    if (key == '=' || operate) {
+    if (key == '=') {
         console.log(first_number, sign, second_number, result);
         if (result != '') second_number = result;
         switch (sign) {
             case '+': 
-                result = (+first_number) + (+second_number);
+                result = parseFloat(first_number) + parseFloat(second_number);
                 break;
             case '-':
-                result = first_number - second_number;
+                result = parseFloat(first_number) - parseFloat(second_number);
                 break;
             case '*':
-                result = first_number * second_number;
+                result = parseFloat(first_number) * parseFloat(second_number);
                 break;
             case '/':
-                result = first_number / second_number;
+                result = parseFloat(first_number) / parseFloat(second_number);
                 break;
         }
         out.textContent = result;
+        lastOperation = sign; // сохраняем последнюю операцию
         finish = true;
         console.log(first_number, sign, second_number, result);
         return;
-    }
+    }    
 }
