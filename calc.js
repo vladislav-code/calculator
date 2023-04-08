@@ -6,6 +6,62 @@ let finish = false;
 let operate = false;
 let result = '';
 let memory = '';
+let func = false;
+// TODO стили кнопок: наследование sup
+// кнопки
+document.querySelector('.func').onclick = funcChange;
+
+function funcChange() {
+    button1 = document.querySelector('.one');
+    button2 = document.querySelector('.two');
+    button3 = document.querySelector('.three');
+    button4 = document.querySelector('.four');
+    button5 = document.querySelector('.five');
+    button6 = document.querySelector('.six');
+    button7 = document.querySelector('.seven');
+    button8 = document.querySelector('.eight');
+    button9 = document.querySelector('.nine');
+    if (!func) {
+        button1.innerText = 'sin';
+        button2.innerText = 'cos';
+        button3.innerText = 'tg';
+
+        sup = document.createElement('sup');
+        sup.style.lineHeight = '0px';
+        sup.innerText = 'x';
+        button4.innerText = 'e';
+        button4.appendChild(sup);
+
+        sup = document.createElement('sup');
+        sup.style.lineHeight = '0px';
+        sup.innerText = 'x';
+        button5.innerText = '10';
+        button5.appendChild(sup);
+
+        sup = document.createElement('sup');
+        sup.style.lineHeight = '0px';
+        sup.innerText = 'y';
+        button6.innerText = 'x';
+        button6.appendChild(sup);
+
+        button7.innerText = 'ln';
+        button8.innerText = 'lg';
+        button9.innerText = '√';
+        func = true;
+    }
+    else {
+        button1.innerText = '1';
+        button2.innerText = '2';
+        button3.innerText = '3';
+        button4.innerText = '4';
+        button5.innerText = '5';
+        button6.innerText = '6';
+        button7.innerText = '7';
+        button8.innerText = '8';
+        button9.innerText = '9';
+        func = false;
+    }
+}
 
 const digit = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'];
 const action = ['-', '+', '*', '/'];
@@ -16,7 +72,7 @@ const out = document.querySelector('.calc-screen p');
 function clearAll() {
     first_number = '';
     second_number = '';
-    let result = '';
+    result = '';
     sign = '';
     finish = false;
     operate = false;
@@ -48,6 +104,7 @@ document.querySelector('.buttons').onclick = (event) => {
     
     if (digit.includes(key)) {
         if(sign == '' && second_number == '') {
+            result = ''; /////
             first_number += key;
             out.textContent = first_number;
         }
@@ -66,16 +123,17 @@ document.querySelector('.buttons').onclick = (event) => {
 
     if (action.includes(key)) {
         console.log('нажат знак');
-        if (sign != '') {operate = true; console.log('повторно знак');}
+        if (sign != '' && !finish) {operate = true; console.log('повторно знак');}
         sign = key;
         console.log(first_number, sign, second_number);
         out.textContent = sign;
         if (!operate) return;
     }
 
+    // двойное нажатие операции при более  чем одно действие
     if (key == '=' || operate) {
         console.log(first_number, sign, second_number, result);
-        if (result != '') second_number = result;
+        if (result != '') first_number = result;
         switch (sign) {
             case '+': 
                 result = (+first_number) + (+second_number);
@@ -87,12 +145,32 @@ document.querySelector('.buttons').onclick = (event) => {
                 result = first_number * second_number;
                 break;
             case '/':
+                if (second_number == 0) {
+                    result = NaN;
+                    break
+                }
                 result = first_number / second_number;
                 break;
         }
         out.textContent = result;
         finish = true;
         console.log(first_number, sign, second_number, result);
+        operate = false;
         return;
+    }
+}
+
+function power() {
+    power = true;
+    screen = document.querySelector('.calc-screen');
+    let getStyle = getComputedStyle(screen);
+    console.log(getStyle.backgroundColor);
+    if (getStyle.backgroundColor == 'rgb(0, 0, 0)') {
+        screen.style.backgroundColor = 'aquamarine';
+        clearAll();
+    }
+    else{
+        screen.style.backgroundColor = 'black';
+        out.textContent = '';
     }
 }
