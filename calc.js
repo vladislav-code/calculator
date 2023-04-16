@@ -111,7 +111,8 @@ document.querySelector('.buttons').onclick = (event) => {
 
     if (action.includes(key)) {
         console.log('нажат знак');
-        if (first_number != '' && second_number != '') {
+        if (first_number !== '' && second_number !== '') {
+            if (result !== '') first_number = result;
             switch (sign) {
                 case '+': 
                     result = (+first_number) + (+second_number);
@@ -126,8 +127,11 @@ document.querySelector('.buttons').onclick = (event) => {
                     result = first_number / second_number;
                     break;
             }
-            out.textContent = result;
-            finish = true;  
+            // out.textContent = result;
+            // finish = true;
+            // result = first_number;
+            second_number = '';
+            sign = '';
         }
         sign = key;
         console.log(first_number, sign, second_number, result);
@@ -137,7 +141,7 @@ document.querySelector('.buttons').onclick = (event) => {
 
     if (key == '=') {
         console.log(first_number, sign, second_number, result);
-        if (result != '') first_number = result;
+        if (result !== '') first_number = result;
         switch (sign) {
             case '+': 
                 result = parseFloat(first_number) + parseFloat(second_number);
@@ -179,3 +183,4 @@ function power() {
         out.textContent = '';
     }
 }
+//TODO: change all to === or !==
