@@ -13,6 +13,7 @@ let power = false;
 let dot = false;
 let rad = false;
 let arc = false;
+let constant = false;
 // TODO стили кнопок: наследование sup
 // кнопки
 // сделать функции через селектор вместо по нажатию????
@@ -162,6 +163,7 @@ function makeDot() {
                 dot = true;
                 //TODO выделить в отдельную функцию для всех случаев
                 //TODO переделать '' на 0
+                //TODO 25 + 5 = 30 '.' -> 305.
                 if (sign == '' && second_number == '') {
                     if (first_number === '') first_number = 0;
                     if (!maxFirst) first_number += '.';
@@ -222,6 +224,7 @@ function clearAll() {
             result = 0;
             sign = '';
             finish = false;
+            lastOperation = '';
             out.textContent = result;
             dot = false;
         } else {
@@ -255,17 +258,32 @@ document.querySelector('.buttons').onclick = (event) => {
         // out.textContent = '';  Исправить; очищает экран при нажатии не кнопки
         // нажатая кнопка
         const key = event.target.textContent;
+        // Оптимизировать
+        if (key == '=') 
+            constant = true;
+        else if (constant) {
+            constant = false;
+            second_number = '';
+            sign = '';
+        }
         console.log(key);
 
         if (digit.includes(key)) {
-            if (sign == '' && second_number == '') {
+            constant = false;
+            if (sign == '' && second_number === '') {
                 result = ''; /////
+                if (finish) {
+                    first_number = key; 
+                    out.textContent = first_number; 
+                    finish = false; 
+                    return;
+                }
                 if (first_number.toString()[0] === '0' && !dot) first_number = key;
                 else if (!maxFirst) first_number += key;
                 out.textContent = first_number;
-            } else if (finish && first_number != '' && second_number != '') {
+            } else if (finish && first_number !== '' && second_number !== '') {
                 second_number = key;
-                finish = false;
+                finish = false; 
                 out.textContent = second_number;
             } else {
                 if (second_number.toString()[0] === '0' && !dot) second_number = key;
@@ -282,6 +300,7 @@ document.querySelector('.buttons').onclick = (event) => {
 
         //TODO: подумать над оптимальной организацией функций
         if (functions.includes(key)) {
+            constant = false; //??????
             switch (key) {
                 case 'ln':
                     result = Math.log(parseFloat(out.textContent));
@@ -335,35 +354,42 @@ document.querySelector('.buttons').onclick = (event) => {
         }
 
         //TODO: fix calculate issue
+        //TODO: 25 + 5 = 30 + 3 + 6 = 36
+        //TODO: 25 + 5 + = 35
         if (action.includes(key)) {
+            constant = false;
             dot = false;
             console.log('нажат знак');
-            if (first_number != '' && second_number != '') {
+            if (first_number !== '' && second_number !== '' && !finish) {
+                if (result !== '') first_number = result;
                 switch (sign) {
                     case '+':
-                        first_number = (+first_number) + (+second_number);
+                        result = (+first_number) + (+second_number);
                         break;
                     case '-':
-                        first_number = first_number - second_number;
+                        result = first_number - second_number;
                         break;
                     case '*':
-                        first_number = first_number * second_number;
+                        result = first_number * second_number;
                         break;
                     case '/':
                         if (second_number == 0) {
                             result = 0;
-                            break
+                            break;
                         }
-                        first_number = first_number / second_number;
+                        result = first_number / second_number;
                         break;
                     case 'xy':
                         result = Math.pow(parseFloat(first_number), parseFloat(second_number));
+                        break;
                 }
-                result = first_number
                 result = cut(result);
-                console.log(result)
-                out.textContent = result;
+                console.log(first_number, sign, second_number, result);
+                // out.textContent = result;
                 finish = true;
+                // result = first_number;
+                // second_number = '';
+                sign = ''; //?????
             }
             sign = key;
             console.log(first_number, sign, second_number, result);
@@ -374,33 +400,43 @@ document.querySelector('.buttons').onclick = (event) => {
         if (key == '=') {
             dot = false;
             console.log(first_number, sign, second_number, result);
-            if (result != '') first_number = result;
+            if (first_number === '') first_number = 0;
+            else if (second_number === '') second_number = 0;
+            if (sign == '' && lastOperation != '') sign = lastOperation; // Геобходимость при constant?
+            if (result !== '' && constant) first_number = result;
             switch (sign) {
                 case '+':
-                    result = parseFloat(first_number) + parseFloat(second_number);
+                    result = (+first_number) + (+second_number);
                     break;
                 case '-':
-                    result = parseFloat(first_number) - parseFloat(second_number);
+                    result = first_number - second_number;
                     break;
                 case '*':
-                    result = parseFloat(first_number) * parseFloat(second_number);
+                    result = first_number * second_number;
                     break;
                 case '/':
                     if (second_number == 0) { // result = 0????
                         result = 0;
-                        break
+                        break;
                     }
                     result = parseFloat(first_number) / parseFloat(second_number);
                     break;
                 case 'xy':
                     result = Math.pow(parseFloat(first_number), parseFloat(second_number));
+                    break;
+                default:
+                    result = first_number;
             }
             result = cut(result);
             out.textContent = result;
-            lastOperation = sign; // сохраняем последнюю операцию
-            finish = true;
             console.log(first_number, sign, second_number, result);
+            lastOperation = sign; // сохраняем последнюю операцию
+            // sign = '';
+            // second_number = '';
+            // first_number = '';
+            finish = true;
             operate = false;
+            constant = true;
             return;
         }
     }
@@ -434,4 +470,5 @@ function powering() {
 //TODO: рефакторинг
 //TODO: после равно результат должен записываться во второе число, чтобы при использовании функции работать с последним числом
 //TODO: добавить подписи над кнопками
-//TODO |C| |F| |ЗАП|
+//TODO: |C| |F| |ЗАП|
+//TODO: change all to === or !==
