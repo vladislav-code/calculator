@@ -9,27 +9,30 @@
     </head>
     <body>
         <div class="calc">
-            <div class="calc-screen">
-                <p>1234</p>
+            <div class="calc-title">Электроника Б3-37</div>
+            <div class="calc-screen"><span>
+              <div class="overflow" id="screenOverflow" style="opacity: 0">1</div>
+              <div class="minus" id="screenMinus" style="opacity: 0">2</div></span>
+                <p></p>
             </div>
             <div class="flags">
                 <div class="power-flag">вкл
                     <label class="switch" title>
-                        <input type="checkbox" onclick="power()">
+                        <input type="checkbox" onchange="powering()" id = "checkPower">
                         <span class="slider"></span>
                     </label>
                 </div>
                 <div class="radian-flag">рад
                     <label class="switch">
-                        <input type="checkbox">
+                        <input type="checkbox" onchange="radOrDegr()"  id = "checkRad">
                         <span class="slider"></span>
                     </label>
                 </div>
             </div>
             <div class="buttons">
-                <div class="btn clear bg-orange" data-value-f="CF">C</div>
+                <div class="btn clear bg-orange" data-value-f="CF" onclick="clearAll()">C</div>
                 <div class="btn func bg-blue">F</div>
-                <div class="btn swap bg-blue">&lt;-&gt;</div>
+                <div class="btn swap bg-blue">&#x2194</div>
                 <div class="btn div bg-blue">/</div>
                 
                 <div class="btn seven">7</div>
@@ -47,8 +50,8 @@
                 <div class="btn three">3</div>
                 <div class="btn plus bg-blue">+</div>
 
-                <div class="btn zero">0</div>
-                <div class="btn dot">.</div>
+                <div class="btn zero" onclick="addZero()">0</div>
+                <div class="btn dot" onclick="makeDot()">.</div>
                 <div class="btn inv">/-/</div>
                 <div class="btn res bg-blue">=</div>
             </div>
