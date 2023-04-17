@@ -280,6 +280,13 @@ document.querySelector('.buttons').onclick = (event) => {
             return;
         }
 
+    if (action.includes(key)) {
+        console.log('нажат знак');
+        if (first_number !== '' && second_number !== '') {
+            if (result !== '') first_number = result;
+            switch (sign) {
+                case '+': 
+                    result = (+first_number) + (+second_number);
         //TODO: подумать над оптимальной организацией функций
         if (functions.includes(key)) {
             switch (key) {
@@ -370,11 +377,22 @@ document.querySelector('.buttons').onclick = (event) => {
             // out.textContent = sign;
             return;
         }
+            // out.textContent = result;
+            // finish = true;
+            // result = first_number;
+            second_number = '';
+            sign = '';
+        }
+        sign = key;
+        console.log(first_number, sign, second_number, result);
+        out.textContent = sign;
+        return;
+    }
 
         if (key == '=') {
             dot = false;
             console.log(first_number, sign, second_number, result);
-            if (result != '') first_number = result;
+            if (result !== '') first_number = result;
             switch (sign) {
                 case '+':
                     result = parseFloat(first_number) + parseFloat(second_number);
@@ -403,6 +421,35 @@ document.querySelector('.buttons').onclick = (event) => {
             operate = false;
             return;
         }
+    }
+}
+    if (key == '=') {
+        console.log(first_number, sign, second_number, result);
+        if (result !== '') first_number = result;
+        switch (sign) {
+            case '+': 
+                result = parseFloat(first_number) + parseFloat(second_number);
+                break;
+            case '-':
+                result = parseFloat(first_number) - parseFloat(second_number);
+                break;
+            case '*':
+                result = parseFloat(first_number) * parseFloat(second_number);
+                break;
+            case '/':
+                if (second_number == 0) {
+                    result = NaN;
+                    break
+                }
+                result = parseFloat(first_number) / parseFloat(second_number);
+                break;
+        }
+        out.textContent = result;
+        lastOperation = sign; // сохраняем последнюю операцию
+        finish = true;
+        console.log(first_number, sign, second_number, result);
+        operate = false;
+        return;
     }
 }
 
@@ -435,3 +482,4 @@ function powering() {
 //TODO: после равно результат должен записываться во второе число, чтобы при использовании функции работать с последним числом
 //TODO: добавить подписи над кнопками
 //TODO |C| |F| |ЗАП|
+//TODO: change all to === or !==
