@@ -1,25 +1,25 @@
 // переменные
-let first_number = '';
-let second_number = '';
+let firstNumber = '';
+let secondNumber = '';
 let sign = '';
 let finish = false;
-let result = 0;
+let result = '';
 let memory = '';
-let lastOperation = '';
 let func = false;
-let maxFirst = false;
-let maxSecond = false;
 let power = false;
 let dot = false;
 let rad = false;
 let arc = false;
 let constant = false;
-// TODO стили кнопок: наследование sup
-// кнопки
-// сделать функции через селектор вместо по нажатию????
-document.querySelector('.func').onclick = funcEnable;
 
-//TODO: доделать реализацию переключения радиан на условие checked
+const digit = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const action = ['-', '+', '*', '/'];
+const functions = ['ln', 'lg', '√', 'ex', '10x', 'xy', 'sin', 'cos', 'tg', '1/X', 'π'];
+const memoryOper = ['П+X2', 'X↔П', 'П-', 'П+', 'ИП', 'ЗАП'];
+
+// экран
+const out = document.querySelector('.calc-screen p');
+
 function radOrDegr() {
     if (document.getElementById('checkRad').checked)
         rad = true;
@@ -27,9 +27,16 @@ function radOrDegr() {
         rad = false;
     console.log(rad);
 }
-// Использовать
+
 function max(x) {
     return (f(x) > 7)
+}
+
+function checkMinus(x) {
+    if (x < 0)
+        document.getElementById('screenMinus').style.opacity = 1;
+    else
+        document.getElementById('screenMinus').style.opacity = 0;
 }
 
 function buttonChange() {
@@ -68,7 +75,7 @@ function buttonChange() {
         button12.innerText = '/-/';
         button13.innerText = 'C';
         button14.innerText = 'F';
-        button15.innerText = '\u2194';
+        button15.innerText = '↔';
         button16.innerText = '/';
         button17.innerText = '*';
         button18.innerText = '-';
@@ -111,7 +118,7 @@ function buttonChange() {
         button12.innerText = 'ЗАП';
         button13.innerText = 'CF';
         button14.innerText = 'ДВ';
-        button15.innerText = 'X\u2194П';
+        button15.innerText = 'X↔П';
         button16.innerText = '1/X';
         button17.innerText = 'π';
         button18.innerText = 'П-';
@@ -119,7 +126,7 @@ function buttonChange() {
         button20.innerText = 'ИП';
     }
 }
-// написать функцию для обработки функций
+
 function funcEnable() {
     if (power)
     {
@@ -128,105 +135,144 @@ function funcEnable() {
             buttonChange();
         } else {
             if(sign !== '') {
-                if (second_number.toString().length === 0) second_number = 0;
-                second_number = second_number.toString().slice(0, -1);
-                out.textContent = second_number;
+                if (secondNumber.toString().length === 0) secondNumber = 0;
+                secondNumber = secondNumber.toString().slice(0, -1);
+                out.textContent = secondNumber;
             }
             else {
-                first_number = first_number.toString().slice(0, -1);
-                if (first_number.toString().length === 0) first_number = 0;
-                out.textContent = first_number;
+                firstNumber = firstNumber.toString().slice(0, -1);
+                if (firstNumber.toString().length === 0) firstNumber = 0;
+                out.textContent = firstNumber;
             }
         }
     }
 }
-//TODO: Разобраться когда необходимы константы, в том числе для функций 
-const digit = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const action = ['-', '+', '*', '/'];
-const functions = ['ln', 'lg', '√', 'ex', '10x', 'xy', 'sin', 'cos', 'tg'];
-const f = x => ((x.toString().includes('.')) ? (x.toString().length - 1) : (x.toString().length)); // Количество разрядов в числе
-// const cut = x => (x.toString().includes('.') ? x.toFixed())
-// переделать с =>
+
+const f = x => ((x.toString().includes('.')) ? (x.toString().includes('-') ? (x.toString().length - 2) : 
+(x.toString().length - 1)) : (x.toString().includes('-') ? (x.toString().length - 1) : (x.toString().length))); // Количество разрядов в числе
+
 function cut (x) {
-    while(f(x) > 7 + 1)
-    x = x.toString().slice(0, -1);
+    x = parseFloat(x).toFixed(8 - x.toString().split('.')[0].length); 
+    x.toN
+    while(f(x) > 7 + 1) {
+        console.log(f(x));
+        x = x.toString().slice(0, -1);
+        document.getElementById('screenOverflow').style.opacity = 1;
+    }
     if (x.toString()[8] === '.')  x = x.toString().slice(0, -1); // обрезаем точку, если она последняя
     if (x.toString().includes('.')) while(x.toString().endsWith('0'))
         x = x.toString().slice(0, -1);
     return x;
 }
-//печать точки
+// печать точки
 function makeDot() {
     if (power) {
         if (!func) {
+            if (sign != '' && secondNumber === '') out.textContent = '';
             if (!dot) {
                 dot = true;
-                //TODO выделить в отдельную функцию для всех случаев
-                //TODO переделать '' на 0
-                //TODO 25 + 5 = 30 '.' -> 305.
-                if (sign == '' && second_number == '') {
-                    if (first_number === '') first_number = 0;
-                    if (!maxFirst) first_number += '.';
+                if (sign == '' && secondNumber === '' || constant) {
+                    if (constant) {
+                        firstNumber = '0.'; 
+                        out.textContent = '0.'; 
+                        finish = false;
+                        document.getElementById('screenMinus').style.opacity = 0;
+                        return;
+                    }
+                    if (firstNumber === '') firstNumber = 0;
+                    firstNumber += '.';
                     out.textContent += '.';
-                } else if (finish && first_number != '' && second_number != '') {
-                    if (second_number === '') second_number = 0;
-                    second_number += '.';
-                    out.textContent += second_number;
                 } else {
-                    if (second_number === '') second_number = 0;
-                    if (!maxSecond) second_number += '.';
-                    out.textContent = second_number; // посмотреть реализацию переполнения точкой
+                    if (secondNumber === '') secondNumber = 0;
+                    secondNumber += '.';
+                    out.textContent += '.';
                 }
             }
-        } else {
-            memory = parseFloat(memory) + Math.pow(parseFloat(out.textContent), 2);
-            console.log(memory);
         }
     }
 }
-
+// печать нуля
 function addZero() {
     if (power) {
         if (!func) {
-            console.log(first_number !== '');
-            if (sign === '') { // если вводится первое число
-                if (first_number == '') out.textContent = first_number = 0;
-                else {
-                    if (!max(first_number)) {
-                        first_number += 0;
+            if (sign != '' && secondNumber === '') out.textContent = '';
+            if (dot) {
+                console.log(sign == '');
+                if (sign == '' && secondNumber === '') { // если вводится первое число
+                    if (firstNumber === '') out.textContent = firstNumber = 0;
+                    else if (!max(firstNumber)) {
+                        firstNumber += 0;
+                        out.textContent += 0;
+                     }
+                } else { // если вводится второе число
+                    if (secondNumber === '') out.textContent = secondNumber = 0;
+                    else if (!max(secondNumber)) {
+                        secondNumber += 0;
                         out.textContent += 0;
                     }
                 }
-            } else if (sign !== '') { // если вводится второе число
-                if (second_number == '') out.textContent = second_number = 0;
-                else {
-                    if (!max(second_number)) {
-                        second_number += 0;
+            } else if (!out.textContent.toString().startsWith(0)) {
+                if (sign == '' && secondNumber === '' || constant) { // если вводится первое число
+                    if (constant) {
+                        firstNumber = 0; 
+                        out.textContent = 0; 
+                        finish = false; 
+                        document.getElementById('screenMinus').style.opacity = 0;
+                        return;
+                    }
+                    if (firstNumber === '') out.textContent = firstNumber = 0;
+                    else if (!max(firstNumber)) {
+                         firstNumber += 0;
+                        out.textContent += 0;
+                    }
+                } else { // если вводится второе число
+                    if (secondNumber === '') out.textContent = secondNumber = 0;
+                    else if (!max(secondNumber)) {
+                        secondNumber += 0;
                         out.textContent += 0;
                     }
                 }
-            }
+            }   
         } else {
             arc = true;
         }
     }     
 }
-// экран
-const out = document.querySelector('.calc-screen p');
+// Обмен регистра индикации и рабочего регистра
+function swap () {
+    if (power) {
+        if (!func) {
+            temp = result;
+            if (temp === '') temp = 0;
+            if (document.getElementById('screenMinus').style.opacity == 1)
+                result = '-' + out.textContent;
+            else
+                result = out.textContent;
+            checkMinus(temp);
+            if (temp.toString().includes('.')) // проеверка является ли число в памяти дробью
+                dot = true;
+            else
+                dot = false;
+            console.log(temp, result, "swap");
+            out.textContent = Math.abs(temp);
+            if (sign == '') firstNumber = temp;
+            else secondNumber = temp;
+        }
+    }
+}
 
 function clearAll() {
     if (power) {
         if (!func) {
-            first_number = '';
-            second_number = '';
-            maxFirst = false;
-            maxSecond = false;
-            result = 0;
+            firstNumber = '';
+            secondNumber = '';
+            result = '';
             sign = '';
             finish = false;
-            lastOperation = '';
-            out.textContent = result;
+            out.textContent = 0;
             dot = false;
+            document.getElementById('screenMinus').style.opacity = 0;
+            document.getElementById('screenOverflow').style.opacity = 0;
         } else {
             func = false;
             arc = false; // Вынести в головную функцию?
@@ -234,19 +280,20 @@ function clearAll() {
         }
     }
 }
-
+// инверсия числа
 function inv() {
     if (power) {
         if (!func) {
-            if (sign === '')
-                first_number = - first_number;
-            else
-                second_number = - second_number
+            if (sign === '') {
+                firstNumber = - firstNumber;
+                checkMinus(firstNumber);
+            } else {
+                secondNumber = - secondNumber;
+                checkMinus(secondNumber);
+            }
         }
     }
 }
-
-// document.querySelector('.clear').onclick = clearAll;
 
 document.querySelector('.buttons').onclick = (event) => {
     if (power) {
@@ -255,187 +302,241 @@ document.querySelector('.buttons').onclick = (event) => {
         // нажата кнопка очистки
         if (event.target.classList.contains('clear')) return;
 
-        // out.textContent = '';  Исправить; очищает экран при нажатии не кнопки
         // нажатая кнопка
         const key = event.target.textContent;
-        // Оптимизировать
-        if (key == '=') 
-            constant = true;
-        else if (constant) {
+    
+        if (constant && key != '=') {
             constant = false;
-            second_number = '';
+            secondNumber = '';
             sign = '';
         }
         console.log(key);
 
         if (digit.includes(key)) {
-            constant = false;
-            if (sign == '' && second_number === '') {
-                result = ''; /////
+            if (sign == '' && secondNumber === '') {
                 if (finish) {
-                    first_number = key; 
-                    out.textContent = first_number; 
+                    firstNumber = key; 
+                    out.textContent = firstNumber; 
                     finish = false; 
+                    document.getElementById('screenMinus').style.opacity = 0;
                     return;
                 }
-                if (first_number.toString()[0] === '0' && !dot) first_number = key;
-                else if (!maxFirst) first_number += key;
-                out.textContent = first_number;
-            } else if (finish && first_number !== '' && second_number !== '') {
-                second_number = key;
-                finish = false; 
-                out.textContent = second_number;
+                if (firstNumber.toString()[0] === '0' && !dot) firstNumber = key;
+                else if (!max(firstNumber)) firstNumber += key;
+                out.textContent = firstNumber;
+                console.log(firstNumber);
             } else {
-                if (second_number.toString()[0] === '0' && !dot) second_number = key;
-                else if (!maxSecond) second_number += key;
-                out.textContent = second_number;
+                if (secondNumber.toString()[0] === '0' && !dot) secondNumber = key;
+                else if (!max(secondNumber)) secondNumber += key;
+                out.textContent = secondNumber;
+                finish = false;
             }
-            //TODO: оформить в отдельную функцию
-            if (f(first_number) > 7) maxFirst = true;
-            if (f(second_number) > 7) maxSecond = true;
-
-            console.log(first_number, sign, second_number);
             return;
         }
 
-        //TODO: подумать над оптимальной организацией функций
         if (functions.includes(key)) {
-            constant = false; //??????
+            if (document.getElementById('screenMinus').style.opacity == 1)
+                tempSign = '-';
+            else
+                tempSign = '+';
             switch (key) {
                 case 'ln':
-                    result = Math.log(parseFloat(out.textContent));
+                    result = Math.log(parseFloat(tempSign + out.textContent));
                     break;
                 case 'lg':
-                    result = Math.log(parseFloat(out.textContent)) / Math.log(10);
+                    result = Math.log(parseFloat(tempSign + out.textContent)) / Math.log(10);
+                    break;
                 case '√':
-                    result = Math.sqrt(parseFloat(out.textContent));
+                    result = Math.sqrt(parseFloat(tempSign + out.textContent));
+                    break;
                 case 'ex':
-                    result = Math.exp(parseFloat(out.textContent));
+                    result = Math.exp(parseFloat(tempSign + out.textContent));
                     break;
                 case '10x':
-                    result = Math.pow(10, parseFloat(out.textContent));
+                    console.log(tempSign + out.textContent);
+                    result = Math.pow(10, parseFloat(tempSign + out.textContent));
+                    break;
                 case 'xy':
                     sign = 'xy';
                     break;
                 case 'sin':
                     if (arc) {
-                        if (rad) result = Math.asin(parseFloat(out.textContent));
-                        else result = Math.asin(parseFloat(out.textContent)) * 180 / Math.PI;
+                        if (rad) result = Math.asin(parseFloat(tempSign + out.textContent));
+                        else result = Math.asin(parseFloat(tempSign + out.textContent)) * 180 / Math.PI;
                     } else {
-                        if (rad) result = Math.sin(parseFloat(out.textContent));
-                        else result = Math.sin(parseFloat(out.textContent) * Math.PI / 180);
+                        if (rad) result = Math.sin(parseFloat(tempSign + out.textContent));
+                        else result = Math.sin(parseFloat(tempSign + out.textContent) * Math.PI / 180);
                     }
                     break;
                 case 'cos':
                     if (arc) {
-                        if (rad) result = Math.acos(parseFloat(out.textContent));
-                        else result = Math.acos(parseFloat(out.textContent)) * 180 / Math.PI;
+                        if (rad) result = Math.acos(parseFloat(tempSign + out.textContent));
+                        else result = Math.acos(parseFloat(tempSign + out.textContent)) * 180 / Math.PI;
                     } else {
-                        if (rad) result = Math.cos(parseFloat(out.textContent));
-                        else result = Math.cos(parseFloat(out.textContent) * Math.PI / 180);
+                        if (rad) result = Math.cos(parseFloat(tempSign + out.textContent));
+                        else result = Math.cos(parseFloat(tempSign + out.textContent) * Math.PI / 180);
                     }
                     break;
                 case 'tg':
                     if (arc) {
-                        if (rad) result = Math.atan(parseFloat(out.textContent));
-                        else result = Math.atan(parseFloat(out.textContent)) * 180 / Math.PI;
+                        if (rad) result = Math.atan(parseFloat(tempSign + out.textContent));
+                        else result = Math.atan(parseFloat(tempSign + out.textContent)) * 180 / Math.PI;
                     } else {
-                        if (rad) result = Math.tan(parseFloat(out.textContent));
-                        else result = Math.tan(parseFloat(out.textContent) * Math.PI / 180);
+                        if (rad) result = Math.tan(parseFloat(tempSign + out.textContent));
+                        else result = Math.tan(parseFloat(tempSign + out.textContent) * Math.PI / 180);
                     }
                     break;
+                case '1/X':
+                    if (out.textContent == 0) {
+                        result = 0;
+                        break;
+                    }
+                    result = (1/parseFloat(tempSign + out.textContent));
+                    console.log(8 - result.toString().split('.')[0].length);
+                    break;
+                case 'π':
+                    result = '3.1415927';
+                    break;
+                // не записывать значения в result????
             }
             if (result.toString() === 'NaN') result = 0;
             result = cut(result);
-            out.textContent = result;
+            checkMinus(result);
+            out.textContent = Math.abs(result);
+            arc = false;
+            func = false;
+            finish = true; // протестировать
+            buttonChange();
+        }
+
+        if (memoryOper.includes(key)) {
+            if (document.getElementById('screenMinus').style.opacity == 1)
+                tempSign = '-';
+            else
+                tempSign = '+';
+            switch (key) {
+                case 'П+X2':
+                    memory = parseFloat(memory) + Math.pow(parseFloat(out.textContent), 2);
+                    break;
+                case 'X↔П':
+                    temp = memory;
+                    if (temp === '') temp = 0;
+                    if (document.getElementById('screenMinus').style.opacity == 1)
+                        memory = '-' + out.textContent;
+                    else
+                        memory = out.textContent;
+                    checkMinus(temp);
+                    if (temp.toString().includes('.')) // проеверка является ли число в памяти дробью
+                        dot = true;
+                    else
+                        dot = false;
+                    console.log(temp, memory, "swap");
+                    out.textContent = Math.abs(temp);
+                    if (sign == '') firstNumber = temp;
+                    else secondNumber = temp;
+                    break;
+                case 'П-':
+                    memory = memory - parseFloat(tempSign + out.textContent);
+                    break;
+                case 'П+':
+                    memory = memory + parseFloat(tempSign + out.textContent);
+                    break;
+                case 'ИП':
+                    if (memory.toString().includes('.')) // проеверка является ли число в памяти дробью
+                        dot = true;
+                    else
+                        dot = false;
+                    checkMinus(memory);
+                    out.textContent = Math.abs(memory);
+                    if (sign == '') firstNumber = memory;
+                    else secondNumber = memory;
+                    break;
+                case 'ЗАП':
+                    memory = parseFloat(tempSign + out.textContent);
+                    break;
+
+            }
             arc = false;
             func = false;
             buttonChange();
         }
 
-        //TODO: fix calculate issue
-        //TODO: 25 + 5 = 30 + 3 + 6 = 36
-        //TODO: 25 + 5 + = 35
         if (action.includes(key)) {
-            constant = false;
             dot = false;
             console.log('нажат знак');
-            if (first_number !== '' && second_number !== '' && !finish) {
-                if (result !== '') first_number = result;
+            if (result !== '' && finish) firstNumber = result;
+            if (firstNumber !== '' && secondNumber !== '' && !finish) {
+                console.log(firstNumber);
                 switch (sign) {
                     case '+':
-                        result = (+first_number) + (+second_number);
+                        result = (+firstNumber) + (+secondNumber);
                         break;
                     case '-':
-                        result = first_number - second_number;
+                        result = firstNumber - secondNumber;
                         break;
                     case '*':
-                        result = first_number * second_number;
+                        result = firstNumber * secondNumber;
                         break;
                     case '/':
-                        if (second_number == 0) {
+                        if (secondNumber == 0) {
                             result = 0;
                             break;
                         }
-                        result = first_number / second_number;
+                        result = firstNumber / secondNumber;
                         break;
                     case 'xy':
-                        result = Math.pow(parseFloat(first_number), parseFloat(second_number));
+                        result = Math.pow(parseFloat(firstNumber), parseFloat(secondNumber));
                         break;
                 }
                 result = cut(result);
-                console.log(first_number, sign, second_number, result);
-                // out.textContent = result;
+                console.log(firstNumber, sign, secondNumber, result);
                 finish = true;
-                // result = first_number;
-                // second_number = '';
-                sign = ''; //?????
+                firstNumber = result;
+                secondNumber = '';
+                sign = '';
             }
             sign = key;
-            console.log(first_number, sign, second_number, result);
-            // out.textContent = sign;
+            console.log(firstNumber, sign, secondNumber, result);
             return;
         }
 
         if (key == '=') {
             dot = false;
-            console.log(first_number, sign, second_number, result);
-            if (first_number === '') first_number = 0;
-            else if (second_number === '') second_number = 0;
-            if (sign == '' && lastOperation != '') sign = lastOperation; // Геобходимость при constant?
-            if (result !== '' && constant) first_number = result;
+            console.log(firstNumber, sign, secondNumber, result, constant);
+            if (firstNumber === '') firstNumber = 0;
+            else if (secondNumber === '') secondNumber = 0;
+            console.log(firstNumber);
+            if (result !== '' && constant) firstNumber = result;
+            console.log(firstNumber);
             switch (sign) {
                 case '+':
-                    result = (+first_number) + (+second_number);
+                    result = (+firstNumber) + (+secondNumber);
                     break;
                 case '-':
-                    result = first_number - second_number;
+                    result = firstNumber - secondNumber;
                     break;
                 case '*':
-                    result = first_number * second_number;
+                    result = firstNumber * secondNumber;
                     break;
                 case '/':
-                    if (second_number == 0) { // result = 0????
+                    if (secondNumber == 0) {
                         result = 0;
                         break;
                     }
-                    result = parseFloat(first_number) / parseFloat(second_number);
+                    result = parseFloat(firstNumber) / parseFloat(secondNumber);
                     break;
                 case 'xy':
-                    result = Math.pow(parseFloat(first_number), parseFloat(second_number));
+                    result = Math.pow(parseFloat(firstNumber), parseFloat(secondNumber));
                     break;
                 default:
-                    result = first_number;
+                    result = firstNumber;
             }
+            console.log(result);
             result = cut(result);
-            out.textContent = result;
-            console.log(first_number, sign, second_number, result);
-            lastOperation = sign; // сохраняем последнюю операцию
-            // sign = '';
-            // second_number = '';
-            // first_number = '';
+            checkMinus(result);
+            out.textContent = Math.abs(result);
+            console.log(firstNumber, sign, secondNumber, result);
             finish = true;
-            operate = false;
             constant = true;
             return;
         }
@@ -459,16 +560,4 @@ function powering() {
         out.textContent = '';
     }
 }
-//TODO: исправить деление, проверка деления на ноль, при вводе второго числа как ноль ничего не происходит
-//TODO: выход из функции кроме arc и ДВ
-//TODO: исправить вывод нуля
-//TODO: кнопки должны соотвествовать исходнику(исправить переключение на подписи?)
-//TODO: фикс цвета
-//TODO: добавить служебный разряд индикации переполнения и отрицательного числа
-//TODO: data-value for buttons
-//TODO: сделать функции
-//TODO: рефакторинг
-//TODO: после равно результат должен записываться во второе число, чтобы при использовании функции работать с последним числом
-//TODO: добавить подписи над кнопками
-//TODO: |C| |F| |ЗАП|
-//TODO: change all to === or !==
+//TODO: ограничения для функций
