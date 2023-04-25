@@ -4,7 +4,7 @@ let secondNumber = '';
 let sign = '';
 let finish = false;
 let result = '';
-let memory = '';
+let memory = 0;
 let func = false;
 let power = false;
 let dot = false;
@@ -13,19 +13,35 @@ let arc = false;
 let constant = false;
 
 const digit = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-const action = ['-', '+', '*', '/'];
+const action = ['-', '+', '*', '/', 'xy'];
 const functions = ['ln', 'lg', '√', 'ex', '10x', 'xy', 'sin', 'cos', 'tg', '1/X', 'π'];
 const memoryOper = ['П+X2', 'X↔П', 'П-', 'П+', 'ИП', 'ЗАП'];
 
 // экран
 const out = document.querySelector('.calc-screen p');
 
+function powering() {
+    screen = document.querySelector('.calc-screen');
+    let getStyle = getComputedStyle(screen);
+    if (!power) {
+        power = true;
+        screen.style.backgroundColor = '#3b1b1b';
+        screen.style.boxShadow = "inset 0px 0px 10px 1px #ff0000b0";
+        clearAll();
+    }
+    else{
+        power = false;
+        screen.style.backgroundColor = 'black';
+        screen.style.boxShadow = "inset 0px 0px 10px 1px #000000b0";
+        out.textContent = '';
+    }
+}
+
 function radOrDegr() {
     if (document.getElementById('checkRad').checked)
         rad = true;
     else
         rad = false;
-    console.log(rad);
 }
 
 function max(x) {
@@ -33,6 +49,7 @@ function max(x) {
 }
 
 function checkMinus(x) {
+    res = 0;
     if (x < 0)
         document.getElementById('screenMinus').style.opacity = 1;
     else
@@ -152,10 +169,9 @@ const f = x => ((x.toString().includes('.')) ? (x.toString().includes('-') ? (x.
 (x.toString().length - 1)) : (x.toString().includes('-') ? (x.toString().length - 1) : (x.toString().length))); // Количество разрядов в числе
 
 function cut (x) {
-    x = parseFloat(x).toFixed(8 - x.toString().split('.')[0].length); 
+    if (x.toString().includes('.')) x = parseFloat(x).toFixed(8 - x.toString().split('.')[0].length); 
     x.toN
     while(f(x) > 7 + 1) {
-        console.log(f(x));
         x = x.toString().slice(0, -1);
         document.getElementById('screenOverflow').style.opacity = 1;
     }
@@ -197,7 +213,6 @@ function addZero() {
         if (!func) {
             if (sign != '' && secondNumber === '') out.textContent = '';
             if (dot) {
-                console.log(sign == '');
                 if (sign == '' && secondNumber === '') { // если вводится первое число
                     if (firstNumber === '') out.textContent = firstNumber = 0;
                     else if (!max(firstNumber)) {
@@ -253,7 +268,6 @@ function swap () {
                 dot = true;
             else
                 dot = false;
-            console.log(temp, result, "swap");
             out.textContent = Math.abs(temp);
             if (sign == '') firstNumber = temp;
             else secondNumber = temp;
@@ -275,7 +289,7 @@ function clearAll() {
             document.getElementById('screenOverflow').style.opacity = 0;
         } else {
             func = false;
-            arc = false; // Вынести в головную функцию?
+            arc = false;
             buttonChange();
         }
     }
@@ -310,9 +324,12 @@ document.querySelector('.buttons').onclick = (event) => {
             secondNumber = '';
             sign = '';
         }
-        console.log(key);
 
         if (digit.includes(key)) {
+            if (finish) {
+                secondNumber = '';
+                dot = false;
+            }
             if (sign == '' && secondNumber === '') {
                 if (finish) {
                     firstNumber = key; 
@@ -324,8 +341,8 @@ document.querySelector('.buttons').onclick = (event) => {
                 if (firstNumber.toString()[0] === '0' && !dot) firstNumber = key;
                 else if (!max(firstNumber)) firstNumber += key;
                 out.textContent = firstNumber;
-                console.log(firstNumber);
             } else {
+                if (secondNumber === '') document.getElementById('screenMinus').style.opacity = 0;
                 if (secondNumber.toString()[0] === '0' && !dot) secondNumber = key;
                 else if (!max(secondNumber)) secondNumber += key;
                 out.textContent = secondNumber;
@@ -353,7 +370,6 @@ document.querySelector('.buttons').onclick = (event) => {
                     result = Math.exp(parseFloat(tempSign + out.textContent));
                     break;
                 case '10x':
-                    console.log(tempSign + out.textContent);
                     result = Math.pow(10, parseFloat(tempSign + out.textContent));
                     break;
                 case 'xy':
@@ -392,21 +408,30 @@ document.querySelector('.buttons').onclick = (event) => {
                         break;
                     }
                     result = (1/parseFloat(tempSign + out.textContent));
-                    console.log(8 - result.toString().split('.')[0].length);
                     break;
                 case 'π':
+                    if (sign == '')
+                        firstNumber = '3.1415927';
+                    else
+                        secondNumber = '3.1415927';
                     result = '3.1415927';
                     break;
-                // не записывать значения в result????
             }
-            if (result.toString() === 'NaN') result = 0;
             result = cut(result);
             checkMinus(result);
+            if (document.getElementById('screenOverflow').style.opacity == 1) result = 0;
+            if (result.toString() === 'NaN') result = 0;
+            if (secondNumber === '' && sign != 'xy')
+                firstNumber = result;
+            else
+                secondNumber = result;
             out.textContent = Math.abs(result);
             arc = false;
             func = false;
-            finish = true; // протестировать
             buttonChange();
+            finish = true;
+            console.log(result);
+            return;
         }
 
         if (memoryOper.includes(key)) {
@@ -417,6 +442,7 @@ document.querySelector('.buttons').onclick = (event) => {
             switch (key) {
                 case 'П+X2':
                     memory = parseFloat(memory) + Math.pow(parseFloat(out.textContent), 2);
+                    memory = cut(memory);
                     break;
                 case 'X↔П':
                     temp = memory;
@@ -430,16 +456,17 @@ document.querySelector('.buttons').onclick = (event) => {
                         dot = true;
                     else
                         dot = false;
-                    console.log(temp, memory, "swap");
                     out.textContent = Math.abs(temp);
                     if (sign == '') firstNumber = temp;
                     else secondNumber = temp;
                     break;
                 case 'П-':
                     memory = memory - parseFloat(tempSign + out.textContent);
+                    memory = cut(memory);
                     break;
                 case 'П+':
                     memory = memory + parseFloat(tempSign + out.textContent);
+                    memory = cut(memory);
                     break;
                 case 'ИП':
                     if (memory.toString().includes('.')) // проеверка является ли число в памяти дробью
@@ -454,19 +481,18 @@ document.querySelector('.buttons').onclick = (event) => {
                 case 'ЗАП':
                     memory = parseFloat(tempSign + out.textContent);
                     break;
-
             }
             arc = false;
             func = false;
             buttonChange();
+            console.log(result);
+            return;
         }
 
         if (action.includes(key)) {
             dot = false;
-            console.log('нажат знак');
             if (result !== '' && finish) firstNumber = result;
             if (firstNumber !== '' && secondNumber !== '' && !finish) {
-                console.log(firstNumber);
                 switch (sign) {
                     case '+':
                         result = (+firstNumber) + (+secondNumber);
@@ -489,25 +515,23 @@ document.querySelector('.buttons').onclick = (event) => {
                         break;
                 }
                 result = cut(result);
-                console.log(firstNumber, sign, secondNumber, result);
+                checkMinus(result);
+                out.textContent = result;
                 finish = true;
+                console.log(firstNumber, sign, secondNumber, result);
                 firstNumber = result;
                 secondNumber = '';
                 sign = '';
             }
             sign = key;
-            console.log(firstNumber, sign, secondNumber, result);
             return;
         }
 
         if (key == '=') {
             dot = false;
-            console.log(firstNumber, sign, secondNumber, result, constant);
             if (firstNumber === '') firstNumber = 0;
             else if (secondNumber === '') secondNumber = 0;
-            console.log(firstNumber);
             if (result !== '' && constant) firstNumber = result;
-            console.log(firstNumber);
             switch (sign) {
                 case '+':
                     result = (+firstNumber) + (+secondNumber);
@@ -531,33 +555,13 @@ document.querySelector('.buttons').onclick = (event) => {
                 default:
                     result = firstNumber;
             }
-            console.log(result);
             result = cut(result);
             checkMinus(result);
             out.textContent = Math.abs(result);
-            console.log(firstNumber, sign, secondNumber, result);
             finish = true;
             constant = true;
+            console.log(result);
             return;
         }
     }
 }
-
-function powering() {
-    screen = document.querySelector('.calc-screen');
-    let getStyle = getComputedStyle(screen);
-    console.log(getStyle.backgroundColor);
-    if (!power) {
-        power = true;
-        screen.style.backgroundColor = '#3b1b1b';
-        screen.style.boxShadow = "inset 0px 0px 10px 1px #ff0000b0";
-        clearAll();
-    }
-    else{
-        power = false;
-        screen.style.backgroundColor = 'black';
-        screen.style.boxShadow = "inset 0px 0px 10px 1px #000000b0";
-        out.textContent = '';
-    }
-}
-//TODO: ограничения для функций
